@@ -653,7 +653,7 @@ export default function Home() {
       <div className="texture" aria-hidden="true" />
 
       <header className="masthead">
-        <a className="zcash-brand" href="https://z.cash/" target="_blank" rel="noreferrer">
+        <a className="zcash-brand" href={assetPath("/")} aria-label="Return to the 2013 beginning">
           <img src={assetPath("/zcash-official-white.svg")} alt="Zcash" />
           <span>
             <b>ZCASH</b>

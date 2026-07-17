@@ -164,12 +164,30 @@ a:focus-visible {
   color: #e7dfd2;
 }
 
-.play-control {
-  border-left: 1px solid rgba(255, 255, 255, 0.12) !important;
+.masthead-actions .play-control {
+  min-width: 112px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 12%, rgba(8, 9, 8, 0.82));
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    0 0 22px color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.masthead-actions .play-control:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, rgba(8, 9, 8, 0.78));
+  transform: translateY(-1px);
 }
 
 .play-control > span {
   color: var(--accent);
+  font-size: 12px;
 }
 
 .sound-bars {
@@ -247,6 +265,10 @@ a:focus-visible {
   transition: left 700ms ease, right 700ms ease;
 }
 
+.chapter-copy:has(.chapter-stats dd.is-compact) {
+  width: min(42vw, 680px);
+}
+
 .is-reversed .chapter-copy {
   right: 4.5vw;
   left: auto;
@@ -308,6 +330,10 @@ a:focus-visible {
   border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.chapter-stats:has(dd.is-compact) {
+  grid-template-columns: 0.82fr 1.36fr 0.82fr;
+}
+
 .chapter-stats div {
   min-width: 0;
   padding: 16px 12px 0 0;
@@ -339,8 +365,8 @@ a:focus-visible {
 }
 
 .chapter-stats dd.is-compact {
-  font-size: clamp(0.82rem, 1vw, 1rem);
-  letter-spacing: -0.025em;
+  font-size: clamp(1.3rem, 1.55vw, 1.65rem);
+  letter-spacing: -0.045em;
   line-height: 0.95;
   white-space: nowrap;
 }
@@ -1808,6 +1834,10 @@ a:focus-visible {
     width: min(34vw, 380px);
   }
 
+  .chapter-copy:has(.chapter-stats dd.is-compact) {
+    width: min(46vw, 480px);
+  }
+
   .script-sheet {
     width: min(44vw, 500px);
   }
@@ -1902,6 +1932,10 @@ a:focus-visible {
     text-align: left;
   }
 
+  .chapter-copy:has(.chapter-stats dd.is-compact) {
+    width: auto;
+  }
+
   .is-reversed .year-lockup {
     flex-direction: row;
   }
@@ -1928,7 +1962,11 @@ a:focus-visible {
   }
 
   .chapter-stats dd.is-compact {
-    font-size: 14px;
+    font-size: 18px;
+  }
+
+  .chapter-stats:has(dd.is-compact) dd {
+    font-size: 18px;
   }
 
   .script-sheet,

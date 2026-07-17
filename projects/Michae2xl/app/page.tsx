@@ -371,6 +371,16 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+function createNoiseBuffer(audio: AudioContext, duration: number, decay = 2.4) {
+  const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let index = 0; index < data.length; index += 1) {
+    const envelope = Math.pow(1 - index / data.length, decay);
+    data[index] = (Math.random() * 2 - 1) * envelope;
+  }
+  return buffer;
+}
+
 function UpgradeMark({ era }: { era: Era }) {
   if (!era.logo) {
     return (
@@ -406,6 +416,7 @@ export default function Home() {
   const [finale, setFinale] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
+  const audioBusRef = useRef<GainNode | null>(null);
   const previousActive = useRef(0);
   const timelineRef = useRef<HTMLDivElement | null>(null);
   const era = ERAS[active];
@@ -419,7 +430,21 @@ export default function Home() {
     ];
 
   const ensureAudio = useCallback(async () => {
-    if (!audioRef.current) audioRef.current = new AudioContext();
+    if (!audioRef.current) {
+      const audio = new AudioContext();
+      const master = audio.createGain();
+      const compressor = audio.createDynamicsCompressor();
+      master.gain.value = 0.82;
+      compressor.threshold.value = -20;
+      compressor.knee.value = 14;
+      compressor.ratio.value = 4;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.16;
+      master.connect(compressor);
+      compressor.connect(audio.destination);
+      audioRef.current = audio;
+      audioBusRef.current = master;
+    }
     if (audioRef.current.state === "suspended") await audioRef.current.resume();
     return audioRef.current;
   }, []);
@@ -428,17 +453,18 @@ export default function Home() {
     const audio = context ?? audioRef.current;
     if (!audio) return;
     const now = audio.currentTime;
-    [880, 1320].forEach((frequency, index) => {
+    const output = audioBusRef.current ?? audio.destination;
+    [1046.5, 2093].forEach((frequency, index) => {
       const oscillator = audio.createOscillator();
       const gain = audio.createGain();
       oscillator.type = "sine";
       oscillator.frequency.setValueAtTime(frequency, now);
-      gain.gain.setValueAtTime(index === 0 ? 0.035 : 0.018, now);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+      gain.gain.setValueAtTime(index === 0 ? 0.09 : 0.034, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.95);
       oscillator.connect(gain);
-      gain.connect(audio.destination);
-      oscillator.start(now + index * 0.035);
-      oscillator.stop(now + 0.68);
+      gain.connect(output);
+      oscillator.start(now + index * 0.018);
+      oscillator.stop(now + 1);
     });
   }, []);
 
@@ -448,12 +474,8 @@ export default function Home() {
 
     const now = audio.currentTime;
     const duration = 1.25;
-    const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let index = 0; index < data.length; index += 1) {
-      const envelope = Math.pow(1 - index / data.length, 2.4);
-      data[index] = (Math.random() * 2 - 1) * envelope;
-    }
+    const output = audioBusRef.current ?? audio.destination;
+    const buffer = createNoiseBuffer(audio, duration);
 
     const blast = audio.createBufferSource();
     const blastFilter = audio.createBiquadFilter();
@@ -466,7 +488,7 @@ export default function Home() {
     blastGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
     blast.connect(blastFilter);
     blastFilter.connect(blastGain);
-    blastGain.connect(audio.destination);
+    blastGain.connect(output);
 
     const impact = audio.createOscillator();
     const impactGain = audio.createGain();
@@ -476,7 +498,7 @@ export default function Home() {
     impactGain.gain.setValueAtTime(0.32, now);
     impactGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.78);
     impact.connect(impactGain);
-    impactGain.connect(audio.destination);
+    impactGain.connect(output);
 
     blast.start(now);
     impact.start(now);
@@ -489,43 +511,98 @@ export default function Home() {
       const audio = audioRef.current;
       if (!sound || !audio) return;
       const now = audio.currentTime;
+      const output = audioBusRef.current ?? audio.destination;
+      const instrument = active <= 4 ? "typewriter" : active <= 9 ? "mechanical" : "digital";
+      const characterCode = character.charCodeAt(0) || 32;
+      const pitchOffset = characterCode % 11;
 
       if (character === "\n") {
-        const oscillator = audio.createOscillator();
-        const gain = audio.createGain();
-        oscillator.type = "triangle";
-        oscillator.frequency.setValueAtTime(360, now);
-        oscillator.frequency.exponentialRampToValueAtTime(110, now + 0.13);
-        gain.gain.setValueAtTime(0.045, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
-        oscillator.connect(gain);
-        gain.connect(audio.destination);
-        oscillator.start(now);
-        oscillator.stop(now + 0.16);
+        const returnDuration = instrument === "typewriter" ? 0.24 : 0.075;
+        const returnNoise = audio.createBufferSource();
+        const returnFilter = audio.createBiquadFilter();
+        const returnGain = audio.createGain();
+        returnNoise.buffer = createNoiseBuffer(audio, returnDuration, 1.7);
+        returnFilter.type = "bandpass";
+        returnFilter.frequency.setValueAtTime(instrument === "typewriter" ? 1150 : 2100, now);
+        returnFilter.frequency.exponentialRampToValueAtTime(420, now + returnDuration);
+        returnFilter.Q.value = 1.1;
+        returnGain.gain.setValueAtTime(instrument === "typewriter" ? 0.16 : 0.11, now);
+        returnGain.gain.exponentialRampToValueAtTime(0.0001, now + returnDuration);
+        returnNoise.connect(returnFilter);
+        returnFilter.connect(returnGain);
+        returnGain.connect(output);
+        returnNoise.start(now);
+
+        const ratchetCount = instrument === "typewriter" ? 7 : 2;
+        for (let index = 0; index < ratchetCount; index += 1) {
+          const ratchet = audio.createOscillator();
+          const ratchetGain = audio.createGain();
+          const start = now + index * (instrument === "typewriter" ? 0.027 : 0.018);
+          ratchet.type = instrument === "digital" ? "sine" : "square";
+          ratchet.frequency.setValueAtTime(145 + index * 17, start);
+          ratchet.frequency.exponentialRampToValueAtTime(78, start + 0.032);
+          ratchetGain.gain.setValueAtTime(instrument === "typewriter" ? 0.035 : 0.055, start);
+          ratchetGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.036);
+          ratchet.connect(ratchetGain);
+          ratchetGain.connect(output);
+          ratchet.start(start);
+          ratchet.stop(start + 0.04);
+        }
+
+        if (instrument === "typewriter") {
+          [1174.7, 1760].forEach((frequency, index) => {
+            const bell = audio.createOscillator();
+            const bellGain = audio.createGain();
+            const start = now + 0.16 + index * 0.008;
+            bell.type = "sine";
+            bell.frequency.setValueAtTime(frequency, start);
+            bellGain.gain.setValueAtTime(index === 0 ? 0.055 : 0.022, start);
+            bellGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.52);
+            bell.connect(bellGain);
+            bellGain.connect(output);
+            bell.start(start);
+            bell.stop(start + 0.56);
+          });
+        }
         return;
       }
 
-      const duration = era.machineIndex < 3 ? 0.034 : 0.022;
-      const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) {
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
-      }
+      const isSpace = character === " ";
+      const duration = instrument === "typewriter" ? 0.052 : instrument === "mechanical" ? 0.036 : 0.025;
       const source = audio.createBufferSource();
       const filter = audio.createBiquadFilter();
       const gain = audio.createGain();
-      source.buffer = buffer;
+      source.buffer = createNoiseBuffer(audio, duration, instrument === "typewriter" ? 2.8 : 2.2);
       filter.type = "bandpass";
-      filter.frequency.value = era.machineIndex < 3 ? 1650 : 2450;
-      filter.Q.value = 0.8;
-      gain.gain.setValueAtTime(era.machineIndex < 3 ? 0.12 : 0.065, now);
+      filter.frequency.value =
+        (instrument === "typewriter" ? 2050 : instrument === "mechanical" ? 3150 : 3900) + pitchOffset * 55;
+      filter.Q.value = instrument === "typewriter" ? 1.45 : 0.9;
+      const transientLevel = instrument === "typewriter" ? 0.2 : instrument === "mechanical" ? 0.125 : 0.085;
+      gain.gain.setValueAtTime(isSpace ? transientLevel * 0.72 : transientLevel, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       source.connect(filter);
       filter.connect(gain);
-      gain.connect(audio.destination);
+      gain.connect(output);
       source.start(now);
+
+      const body = audio.createOscillator();
+      const bodyGain = audio.createGain();
+      const bodyDuration = instrument === "typewriter" ? 0.06 : 0.045;
+      body.type = instrument === "digital" ? "sine" : "triangle";
+      body.frequency.setValueAtTime(
+        (isSpace ? 115 : instrument === "typewriter" ? 190 : instrument === "mechanical" ? 235 : 285) + pitchOffset * 4,
+        now,
+      );
+      body.frequency.exponentialRampToValueAtTime(isSpace ? 58 : 82, now + bodyDuration);
+      const bodyLevel = instrument === "typewriter" ? 0.075 : instrument === "mechanical" ? 0.045 : 0.026;
+      bodyGain.gain.setValueAtTime(isSpace ? bodyLevel * 1.25 : bodyLevel, now);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, now + bodyDuration);
+      body.connect(bodyGain);
+      bodyGain.connect(output);
+      body.start(now);
+      body.stop(now + bodyDuration + 0.005);
     },
-    [era.machineIndex, sound],
+    [active, sound],
   );
 
   useEffect(() => {
@@ -591,7 +668,14 @@ export default function Home() {
     setActive(Math.max(0, Math.min(ERAS.length - 1, index)));
   }, []);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
+    if (!playing) {
+      const audio = await ensureAudio();
+      if (!sound) {
+        setSound(true);
+        playBell(audio);
+      }
+    }
     if (active === ERAS.length - 1 && typedLength >= fullText.length) {
       setPlaying(false);
       setFinale(true);
@@ -620,7 +704,7 @@ export default function Home() {
       if (event.key === "ArrowLeft") goTo(active - 1);
       if (event.key === " " && event.target === document.body) {
         event.preventDefault();
-        togglePlay();
+        void togglePlay();
       }
     };
     window.addEventListener("keydown", handleKey);
@@ -667,11 +751,15 @@ export default function Home() {
         </div>
 
         <div className="masthead-actions">
-          <button className={`sound-control ${sound ? "is-on" : ""}`} onClick={toggleSound}>
+          <button
+            className={`sound-control ${sound ? "is-on" : ""}`}
+            onClick={toggleSound}
+            aria-pressed={sound}
+          >
             <span className="sound-bars" aria-hidden="true"><i /><i /><i /></span>
             {sound ? "SOUND ON" : "SOUND OFF"}
           </button>
-          <button className="play-control" onClick={togglePlay}>
+          <button className="play-control" onClick={togglePlay} aria-pressed={playing}>
             <span aria-hidden="true">{playing ? "Ⅱ" : "▶"}</span>
             {playing ? "PAUSE" : active === ERAS.length - 1 ? "FINALE" : "PLAY"}
           </button>

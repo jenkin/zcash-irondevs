@@ -1,0 +1,14 @@
+[package]
+name = "zcash_extractor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+git2 = "0.18"          # Обертка над libgit2
+rayon = "1.8"          # Параллельные вычисления (data parallelism)
+serde = { version = "1.0", features = ["derive"] }
+csv = "1.3"            # Быстрая запись в CSV
+chrono = { version = "0.4", features = ["serde"] } # Работа с датами
+walkdir = "2.4"        # Рекурсивный обход директорий
+indicatif = "0.17"     # Красивый прогресс-бар в консоли
+anyhow = "1.0"         # Удобная обработка ошибок

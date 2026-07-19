@@ -1,2 +1,8 @@
 data/*
 !data/.gitkeep
+
+extracted_commits.csv
+
+# Игнорируем артефакты сборки Rust
+**/target/
+**/*.rs.bk

@@ -1,3 +1,4 @@
+import re
 from time import perf_counter
 from math import sqrt
 import matplotlib.pyplot as plt
@@ -23,20 +24,47 @@ DECAY_RATE_PER_DAY = 0.001
 OUTPUT_TITLE = "Zcash Irondevs (static)"
 OUTPUT_FILENAME = "zcash_irondevs_static.png"
 
+BOT_PATTERN = re.compile( # Courtesy of Gemini
+  r"("
+  # Category A: Generic Automated keywords
+  r"bot|actions?|automation|ci[-_]?cd|jenkins|travis|circleci|pipeline|runner|"
+  # Category B: Dependency & Security Tools
+  r"dependabot|renovate|greenkeeper|snyk|sonar|whitesource|fossa|mend|"
+  # Category C: Cloud Providers & Automated Hosting signatures
+  r"noreply\.github\.com|noreply\.gitlab\.com|gcr\.io|vercel|netlify|heroku|"
+  # Category D: Common Release & Formatting Tools
+  r"semantic-release|prettier|eslint|black-formatting|husky|linter"
+  r")", 
+  re.IGNORECASE
+)
+
 # Initial graph
 SG = nx.Graph()
 
-def time_decay(source: datetime, target: datetime, decay_rate: float) -> float:
+def time_decay(source: datetime, target: datetime, now: datetime = datetime.now(timezone.utc), decay_rate: float = 0.01) -> float:
     """Computes exact exponential decay for any continuous point in time."""
     if target < source:
         raise ValueError("Target date cannot be before the start date.")
-        
-    # Calculate continuous time delta (including hours/minutes/seconds if provided)
-    time_delta = target - source
-    days_elapsed = time_delta.total_seconds() / 86400.0  # Continuous float value
     
-    # Compute continuous decay: N(t) = N0 * e^(-lambda * t)
-    return np.exp(-decay_rate * days_elapsed)
+    if target > now:
+        raise ValueError("Target date cannot be in the future beyond 'now'.")
+    
+    if target == source:
+        return 0.0
+    
+    if target == now:
+        return 1.0
+        
+    # Calculate continuous time deltas
+    days_to_target = (target - source).total_seconds() / 86400.0
+    days_to_now = (now - source).total_seconds() / 86400.0
+
+    # Standard exponential growth bounded between 0 and 1
+    raw_growth_target = 1.0 - np.exp(-decay_rate * days_to_target)
+    raw_growth_now = 1.0 - np.exp(-decay_rate * days_to_now)
+    
+    # Compute continuous decay
+    return raw_growth_target / raw_growth_now
 
 def update_edge(u: str, v: str, weight: float) -> None:
   """Update or create an edge in the static graph."""
@@ -49,9 +77,9 @@ def update_edge(u: str, v: str, weight: float) -> None:
     # No interaction exists yet; create a new edge
     SG.add_edge(u, v, weight=weight)
 
-def is_bot(email: str) -> bool:
+def is_bot(name: str, email: str) -> bool:
   """[WIP] Commits authored by bots (ie. renovate, github bot, ci/cd pipelines)"""
-  return "no-reply" in email or "noreply" in email or "github.com" in email
+  return bool(BOT_PATTERN.search(name)) or bool(BOT_PATTERN.search(email))
 
 def get_projected_weight(G: nx.Graph, u: str, v: str):
   """Compute projected weights as sum of the weakest edges"""
@@ -100,10 +128,11 @@ def main():
     repos.add(commit.project_name)
 
     # Compute commit <-> repository edge weight
-    commit_weight = time_decay(START_DATE, committer_date, DECAY_RATE_PER_DAY)
+    commit_weight = time_decay(START_DATE, committer_date, NOW, DECAY_RATE_PER_DAY)
 
     # Create or update an author <-> repository edge
-    if not is_bot(commit.author.email):
+    # Ignore bots
+    if not is_bot(commit.author.name, commit.author.email):
       update_edge(
         f"dev:{commit.author.email}",
         f"repo:{commit.project_name}",
@@ -116,7 +145,8 @@ def main():
       if co_author.email == commit.author.email:
         continue
 
-      if is_bot(co_author.email):
+      # Ignore bots
+      if is_bot(co_author.name, co_author.email):
         continue
 
       update_edge(
@@ -126,8 +156,8 @@ def main():
       )
 
     # Create or update the committeer <-> repository edge
-    # Ignore committer that is also the primary author or a co-author
-    if commit.committer.email != commit.author.email and commit.committer.email not in [co_author.email for co_author in commit.co_authors] and not is_bot(commit.committer.email):
+    # Ignore committer that is also the primary author or a co-author and bots
+    if commit.committer.email != commit.author.email and commit.committer.email not in [co_author.email for co_author in commit.co_authors] and not is_bot(commit.committer.name, commit.committer.email):
       update_edge(
         f"dev:{commit.committer.email}",
         f"repo:{commit.project_name}",
@@ -172,7 +202,7 @@ def main():
   pos = nx.spring_layout(
     DG,
     seed=SEED,
-    # k=0.5,            # Default is approximately 1/sqrt(num_nodes)
+    # k=0.05,            # Default is approximately 1/sqrt(num_nodes)
     iterations=500,     # Number of calculation steps
     weight="weight"     # Tells the spring engine to respect your commit weights
   )

@@ -173,7 +173,7 @@ which is also, concretely, where genuine Zcash-specific work actually
 starts appearing in that repo's real history. One side effect: the
 "Zerocash paper" checkpoint itself now has zero people in it, since none of
 the twelve mined repositories have any commit dated on or after that exact
-day — the earliest real Zcash-specific work in the archive lands a few
+day. The earliest real Zcash-specific work in the archive lands a few
 months later. That's an honest gap in the underlying data, not a bug in
 how it's sliced.
 
@@ -229,8 +229,9 @@ hand-off between two people apart from two people who simply share a repo
 but never overlapped in time. A time-respecting measure can.
 
 It is off by default, and that default is deliberate, not conservative for
-its own sake: running it against this project's own eleven-repo dev sample
-(278 people, on the order of 37,000 temporal edges) drove PathpyG's
+its own sake: running it earlier against a smaller, eleven-repo version of
+the dev sample (278 people, on the order of 37,000 temporal edges, before
+`zcash/zcash` was added and the archive grew to 608) drove PathpyG's
 implementation to roughly 7.5GB of resident memory before the operating
 system's own out-of-memory killer stepped in, confirmed directly from
 kernel logs, not inferred from a crash. An OOM kill happens beneath
@@ -296,13 +297,13 @@ its timestamp differs between runs, never any node, edge, or event.
   it would be inaccurate to treat "no activation yet" as "no work has
   happened." Both checkpoints currently carry the same snapshot data,
   since cumulative slicing at a future date picks up the same commits as
-  slicing at the present when nothing new has landed since -- that's the
+  slicing at the present when nothing new has landed since. That's the
   honest state, not a placeholder standing in for a guess at what Ironwood
   will look like once it's live.
 - GitHub avatars appear for a bit over a fifth of contributors (134 of 608
   in this archive): exactly the ones whose own commits carry evidence of
-  their GitHub login. Showing more
-  would mean guessing, so this is a hard floor rather than something to fix.
+  their GitHub login. Showing more would mean guessing, so this is a hard
+  floor rather than something to fix.
 - The causal-betweenness layer is real but intentionally not part of the
   default run; see "The causal layer" above.
 

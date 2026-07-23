@@ -434,7 +434,7 @@ export default function Explorer() {
           className="absolute left-0 flex flex-col overflow-y-auto border-r px-5 py-6 sm:px-[30px]"
           style={{ top: headerH, bottom: 96, width: chaptersWidth, background: "var(--color-bg)", borderColor: "var(--color-divider)", zIndex: 4 }}
         >
-          <span style={{ fontSize: 11, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--color-accent-700)" }}>Chapter {ROMAN[cp]} of XI</span>
+          <span style={{ fontSize: 11, letterSpacing: "0.09em", textTransform: "uppercase", color: "var(--color-accent-700)" }}>Chapter {ROMAN[cp]} of {ROMAN[maxCp] ?? maxCp + 1}</span>
           <h2 style={{ fontFamily: "var(--font-heading)", fontWeight: 400, fontSize: 32, lineHeight: 1.1, margin: "10px 0 0" }}>{milestone?.name}</h2>
           <p style={{ fontSize: 12.5, color: "color-mix(in srgb, var(--color-text) 65%, transparent)", margin: "8px 0 0" }}>Checkpoint date, {chapter.date}</p>
           <hr className="rule" style={{ margin: "16px 0" }} />
@@ -448,6 +448,9 @@ export default function Explorer() {
             Community events at this checkpoint
           </p>
           <div className="flex flex-col gap-3">
+            {chapter.events.length === 0 && (
+              <p style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-text) 55%, transparent)" }}>Nothing to show yet, there&rsquo;s no network here to speak of.</p>
+            )}
             {chapter.events.map((ev, i) => (
               <div key={i} className="flex items-baseline gap-2.5">
                 <span className={`tag ${ev.cls}`} style={{ flex: "none" }}>

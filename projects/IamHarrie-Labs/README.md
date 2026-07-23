@@ -184,6 +184,26 @@ complete archive rather than shared out for development). Everything
 above, and everything in "Robustness" below, was built and stress-tested
 against the real, running dev sample, not a synthetic stand-in.
 
+So the honest answer to "would this hold up at full scale" is: probably,
+but genuinely untested, and here's the reasoning rather than a guess dressed
+up as a guarantee. Mining itself should scale close to linearly with commit
+count, since it's metadata-only per repo and already runs one process per
+repo in parallel. The part more likely to feel the difference is snapshot
+building: on this twelve-repo sample, the twelve checkpoints together took
+about two minutes, and the later, bigger ones (Louvain plus betweenness on
+a few hundred people) were visibly the slow part, taking longer each time
+as the graph grew across the run. A run with 536 repositories will produce
+a much bigger graph at its later checkpoints, and there's no way to know
+exactly how much slower that gets without actually running it. What's
+already handled: betweenness centrality switches from exact to sampled
+pivots past a couple hundred nodes specifically so it doesn't become the
+bottleneck it would otherwise be. What isn't yet handled: nobody has run
+this pipeline against a graph anywhere near the full archive's real size,
+so if that's the first time it happens, it should be treated as the first
+real stress test, not a formality. The one part of this codebase already
+known to struggle at scale is the causal-betweenness layer (see below), and
+it's off by default for exactly that reason.
+
 ## Running the pipeline yourself
 
 ```bash

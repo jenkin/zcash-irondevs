@@ -19,13 +19,11 @@ export interface Chapter {
 export const CHAPTERS: Chapter[] = [
   {
     date: "18 May 2014",
-    cap: "Four cryptographers and a paper. The whole network fits at one table.",
+    cap: "The paper exists. The code doesn't, not yet.",
     prose: [
-      "The Zerocash paper is published, and the network that will become Zcash is a handful of authors passing drafts. Every edge in the graph is a personal acquaintance.",
+      "The Zerocash paper is published today, and the graph below is empty, on purpose. None of the repositories mined for this project have a single commit this early: the code that will become Zcash is still a couple of years off. The story that follows starts where the actual git history does, not where the idea did.",
     ],
-    events: [
-      { kind: "Formed", cls: "tag-neutral", text: "The founding community gathers, five people around one paper." },
-    ],
+    events: [],
   },
   {
     date: "28 October 2016",

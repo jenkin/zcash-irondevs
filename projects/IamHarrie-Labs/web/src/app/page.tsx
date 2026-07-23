@@ -123,7 +123,7 @@ export default async function Home() {
               distinct rooms, joined by the few people who carry work between
               them.&rdquo;
             </blockquote>
-            <figcaption>Chapter VIII of XI, NU5, May 2022</figcaption>
+            <figcaption>Chapter VIII of XII, NU5, May 2022</figcaption>
           </figure>
         </section>
 
@@ -135,7 +135,7 @@ export default async function Home() {
             Heroes of Z10 reads Zcash&rsquo;s public git history directly. It
             mines every commit with PyDriller, works out who&rsquo;s who
             with union-find deduplication, and builds a weighted
-            co-authorship network tracked across eleven checkpoints.
+            co-authorship network tracked across twelve checkpoints.
             Everything ships as a static export: the whole decade is
             precomputed ahead of time, there&rsquo;s no backend, and the
             code is written to be read, not just run.

@@ -22,7 +22,7 @@ from .discover import RepoRef
 from .repo_config import HISTORY_FLOOR
 
 _COAUTHOR_RE = re.compile(
-    r"^\s*co-authored-by:\s*(?P<name>[^<]+?)\s*<(?P<email>[^>]+)>\s*$",
+    r"^\s*co-authored-by:\s*(?P<name>[^<\r\n]+?)\s*<(?P<email>[^>]+)>\s*$",
     re.IGNORECASE | re.MULTILINE,
 )
 

@@ -14,7 +14,8 @@ from dataclasses import dataclass, field
 
 _BOT_PATTERNS = re.compile(
     r"(\[bot\]$|-bot$|^bot-|dependabot|renovate|github-actions|greenkeeper|snyk-bot|"
-    r"semantic-release|imgbot|allcontributors|codecov|weblate|transifex|mergify)",
+    r"semantic-release|imgbot|allcontributors|codecov|weblate|transifex|mergify|"
+    r"^zkbot$)",
     re.IGNORECASE,
 )
 
@@ -184,8 +185,15 @@ class IdentityResolver:
             emails = {self._sightings[k][1] for k in keys if k.startswith("e:")}
             names = [self._sightings[k][0] for k in keys if k.startswith("n:")]
             bot = any(self._sightings[k][2] for k in keys)
-            # Prefer the longest, most "real"-looking display name.
-            display = max(names, key=len) if names else (next(iter(emails), "unknown"))
+            # Prefer the longest, most "real"-looking display name -- but
+            # never one containing a newline or other control character.
+            # "Longest wins" already shipped one real bug: a commit message
+            # trailer parsing mistake (fixed in mine.py) once produced a
+            # sighting whose "name" was actually two different people's
+            # trailers concatenated across a newline, and being unusually
+            # long, it won the max() over the real, clean name entirely.
+            clean_names = [n for n in names if n.isprintable()]
+            display = max(clean_names or names, key=len) if (clean_names or names) else (next(iter(emails), "unknown"))
             identities[root] = Identity(
                 canonical_id=root,
                 display_name=display,

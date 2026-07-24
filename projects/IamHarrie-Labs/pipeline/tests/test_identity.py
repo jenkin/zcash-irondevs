@@ -30,6 +30,16 @@ def test_is_bot_matches_known_automation_suffixes():
     assert not is_bot("Jane Doe", "jane@example.com")
 
 
+def test_is_bot_matches_zkbot_by_exact_name():
+    # Electric Coin Company's own automated deploy/auto-merge account for
+    # zcashd, real commits like "deploy: <hash>" and "Auto merge of #N" --
+    # doesn't end in "-bot" or "[bot]", so the general suffix patterns above
+    # miss it without an exact-name rule of its own.
+    assert is_bot("zkbot", "zkbot@users.noreply.github.com")
+    assert is_bot("zkbot", "sysadmin@z.cash")
+    assert not is_bot("zkbotanist", "someone@example.com")
+
+
 def test_is_bot_flags_known_ai_coauthor_addresses_not_names():
     # The signal is the specific, well-known address an AI tool's
     # Co-Authored-By trailer uses -- not the display name, since a real
@@ -114,3 +124,20 @@ def test_github_login_ignores_a_malformed_noreply_trailer_missing_its_at_sign():
 
     identity = next(iter(resolver.resolve().values()))
     assert identity.github_login == "acityinohio"
+
+
+def test_display_name_never_picks_a_name_containing_a_newline():
+    # A real bug that shipped once: a commit trailer parsing mistake
+    # (fixed in mine.py) produced a sighting whose "name" was actually two
+    # people's trailers concatenated across a newline, and being unusually
+    # long, it won "longest name wins" over the real, clean name outright.
+    # This is the safety net in identity.py itself, independent of whether
+    # the parser that produced the sighting is ever fixed correctly.
+    resolver = IdentityResolver()
+    resolver.register("Daira Hopwood", "daira@jacaranda.org")
+    resolver.register("Jeff Liang\nSigned-off-by: Daira Hopwood", "daira@jacaranda.org")
+    resolver.canonical("Daira Hopwood", "daira@jacaranda.org")
+    resolver.canonical("Jeff Liang\nSigned-off-by: Daira Hopwood", "daira@jacaranda.org")
+
+    identity = next(iter(resolver.resolve().values()))
+    assert identity.display_name == "Daira Hopwood"

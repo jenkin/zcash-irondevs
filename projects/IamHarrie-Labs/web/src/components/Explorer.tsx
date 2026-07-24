@@ -344,6 +344,11 @@ export default function Explorer() {
             <span style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-text) 70%, transparent)" }}>{l.label}</span>
           </div>
         ))}
+        {snapshot && snapshot.nodes.length > 2 && !snapshot.nodes.some((n) => n.isBridge) && (
+          <p style={{ fontSize: 11, maxWidth: 220, marginTop: 4, color: "color-mix(in srgb, var(--color-text) 50%, transparent)" }}>
+            No structural bridges here: nobody&rsquo;s departure would split this network.
+          </p>
+        )}
       </div>
 
       {/* hover tooltip */}

@@ -124,27 +124,42 @@ repos have a commit dated that early. That's an honest gap in the
 underlying data, and the chapter text says so directly instead of
 pretending otherwise.
 
-The date floor doesn't catch everything, though. `zcash/zcash` still
-periodically pulls in whole chunks of upstream Bitcoin Core through
-ordinary merges, mostly dependency updates (`leveldb`, `secp256k1`), and
-those merges land on `master` with real, post-2014 dates attached to the
-original Bitcoin Core authors. A handful of well-known Bitcoin Core
-figures show up in this dataset with real commit counts as a result:
-Wladimir van der Laan (1,421), Pieter Wuille (507), Cory Fields (351),
-Jonas Schnelli (184), MarcoFalke (98), and Jeff Garzik (80), a little over
-5% of the archive's total commits, attributed to six people who didn't
-work on Zcash. I looked at fixing this precisely, by finding the exact
-commits each merge introduced, but the two candidate signals available
-(commit message keywords, merge parent order) both turned out to be
-unreliable in ways I could demonstrate: matching on the word "subtree" in
-a commit message also catches Zcash's own, unrelated "note commitment
+The date floor doesn't catch everything, though. `zcash/zcash` is a
+Bitcoin Core fork, and it still periodically merges upstream Bitcoin
+Core's own ongoing work into its shared codebase, the networking, RPC,
+and wallet code the two projects still have in common, not just vendored
+dependencies. Those merges land on `master` with real, post-2014 dates
+attached to the original Bitcoin Core authors. A handful of well-known
+Bitcoin Core figures show up in this dataset with real commit counts as a
+result: Wladimir van der Laan (1,421), Pieter Wuille (507), Cory Fields
+(351), Jonas Schnelli (184), MarcoFalke (98), and Jeff Garzik (80), a
+little over 5% of the archive's total commits, attributed to six people
+who didn't work on Zcash.
+
+I checked whether this was narrower than it looks, by testing if each of
+these six people's commits were confined to a small, taggable set of
+vendor directories the way `zkbot` or the AI co-authors were. They
+weren't: Cory Fields has 322 post-floor commits and none of them are
+vendor-only, and most of the others look similar, touching files like
+`src/main.cpp`, `src/net.h`, and `src/rpc/protocol.cpp` directly. That
+rules out a path-based fix, since it's not a small pocket of dependency
+updates, it's ordinary Bitcoin Core development on files Zcash's own
+maintainers also edit as part of real Zcash-specific work. I also looked
+at fixing this through the merge commits themselves, but the two signals
+available (commit message keywords, merge parent order) both turned out
+to be unreliable in ways I could demonstrate: matching the word "subtree"
+in a commit message also catches Zcash's own, unrelated "note commitment
 subtree" terminology (`z_getsubtreesbyindex`, `sapling-subtrees`), and
 assuming a merge's second parent is always the foreign side got the
-direction backwards on the very first real example I checked. A wrong fix
-here would silently strip real credit from actual Zcash maintainers like
-Jack Grigg and Daira-Emma Hopwood, who legitimately touch these same
-vendored files as part of real maintenance work, which is worse than
-leaving six people's inflated counts in place and saying so plainly.
+direction backwards on the very first real example I checked. Tracing
+this properly would mean finding every historical point where `zcashd`
+synced with upstream Bitcoin Core across ten years of history and
+excluding only the commits that came in through that specific sync, which
+is a bigger and riskier undertaking than this project's remaining time
+allowed to get right. A wrong fix here would silently strip real credit
+from actual Zcash maintainers who edit these same shared files as part of
+real work, which is worse than leaving six people's inflated counts in
+place and saying so plainly.
 
 The full contest archive is 536 repositories across 28 owners, which this
 wasn't run against directly (the contributing guide describes it as a
@@ -263,11 +278,13 @@ snapshot except the one deliberately time-relative checkpoint ("Now").
   default run.
 - Six well-known Bitcoin Core contributors (not Zcash people) still show
   up with real commit counts, a little over 5% of the archive's total,
-  from legitimate dependency-update merges that land on `zcash/zcash`'s
-  `master` with genuine post-2014 dates. See "Data used for development"
-  above for why this wasn't fixed further: the available signals for
-  isolating those specific commits turned out to risk misattributing real
-  Zcash maintainers' own work instead.
+  from `zcash/zcash` periodically merging upstream Bitcoin Core's own
+  ongoing work into shared, non-vendored code, not a small pocket of
+  dependency updates. See "Data used for development" above for why this
+  wasn't fixed further: none of the available signals for isolating those
+  specific commits held up under testing, and a wrong fix risked
+  misattributing real Zcash maintainers' own work in the same files
+  instead.
 
 ## License
 

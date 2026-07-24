@@ -1,0 +1,356 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201f1d;
+  --color-accent: #b68235;
+  --color-accent-700: #7d5411;
+  --color-accent-600: #a06f24;
+  --color-divider: color-mix(in srgb, #201f1d 16%, transparent);
+
+  --font-heading: var(--font-cormorant), "Cormorant Garamond", serif;
+  --font-body: var(--font-lora), "Lora", serif;
+
+  --leading: 28px;
+  --half: 14px;
+  --edge: clamp(20px, 5vw, 72px);
+  --measure: 58ch;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  margin: 0;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+.rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--color-divider);
+}
+
+.kicker {
+  display: block;
+  font-size: 13px;
+  line-height: var(--half);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-700);
+  font-feature-settings: "tnum" 1;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--color-text);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  border-radius: 4px;
+}
+.btn-primary {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+.btn-ghost {
+  color: var(--color-accent);
+  padding-inline: 4px;
+}
+.btn-ghost:hover {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+.btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+.input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-divider);
+  border-radius: 4px;
+}
+.input:hover {
+  border-color: color-mix(in srgb, var(--color-text) 45%, transparent);
+}
+.input:focus-visible {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+.tag-neutral {
+  background: color-mix(in srgb, var(--color-text) 8%, var(--color-bg));
+  color: color-mix(in srgb, var(--color-text) 85%, transparent);
+}
+.tag-outline {
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+.seg {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--color-divider);
+  border-radius: 4px;
+}
+.seg-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.seg-opt + .seg-opt {
+  border-left: 1px solid var(--color-divider);
+}
+.seg-opt input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.seg-opt:has(input:checked) {
+  color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.seg-opt:not(:has(input:checked)):hover {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+/* — landing page only — */
+.landing .wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--edge);
+}
+.landing .nav {
+  display: flex;
+  align-items: center;
+  gap: var(--half);
+  padding-block: 18px;
+  padding-inline: max(var(--edge), calc((100% - 1200px) / 2 + var(--edge)));
+  border-bottom: 1px solid var(--color-divider);
+}
+.landing .nav-brand {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 18px;
+  margin-right: auto;
+}
+.landing .nav a {
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.landing .nav a:hover {
+  color: var(--color-accent);
+}
+@media (max-width: 480px) {
+  .landing .nav a:not(.btn) {
+    display: none;
+  }
+}
+
+.landing .hero {
+  padding: calc(4 * var(--leading)) 0 calc(3 * var(--leading));
+}
+.landing .display {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(46px, 6.6vw, 92px);
+  line-height: clamp(49.5px, 7.13vw, 99.5px);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.landing .display .line {
+  display: block;
+}
+.landing .hero .sub {
+  font-size: 17px;
+  line-height: var(--leading);
+  max-width: var(--measure);
+  margin: calc(1.75 * var(--leading)) 0 0;
+  color: color-mix(in srgb, var(--color-text) 82%, transparent);
+}
+.landing .hero .row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: var(--leading);
+}
+
+.landing .stats {
+  padding: calc(2.5 * var(--leading)) 0;
+}
+.landing .stats .grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(90px, auto));
+  justify-content: space-between;
+  gap: calc(1.5 * var(--leading)) var(--leading);
+}
+.landing .stat-num {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(36px, 3.6vw, 52px);
+  line-height: calc(2 * var(--leading));
+  /* Cormorant Garamond's default (oldstyle) "1" is a plain vertical stroke
+     that reads as a capital "I" at display size -- two in a row (any stat
+     that happens to be "11") rendered as "I I". Lining figures use a
+     distinct "1" with a proper flag/serif, which reads correctly. */
+  font-variant-numeric: lining-nums;
+  color: var(--color-text);
+  margin: 0;
+}
+.landing .stat-num.gilt {
+  color: var(--color-accent);
+}
+.landing .stat-label {
+  font-size: 13px;
+  line-height: var(--half);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+  margin: var(--half) 0 0;
+}
+
+.landing .features {
+  padding: calc(3 * var(--leading)) 0 calc(2.5 * var(--leading));
+}
+.landing .cols {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(1.5 * var(--leading)) calc(2 * var(--leading));
+  margin-top: var(--leading);
+}
+.landing .col h2 {
+  font-size: 26px;
+  line-height: var(--leading);
+  letter-spacing: -0.005em;
+}
+.landing .col p {
+  font-size: 15.5px;
+  line-height: var(--leading);
+  margin: calc(var(--half)) 0 0;
+  color: color-mix(in srgb, var(--color-text) 78%, transparent);
+}
+@media (max-width: 1108px) {
+  .landing .cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.landing .quote {
+  padding: calc(2.5 * var(--leading)) 0 calc(3.5 * var(--leading));
+}
+.landing .quote blockquote {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: clamp(26px, 2.8vw, 36px);
+  line-height: calc(1.5 * var(--leading));
+  letter-spacing: -0.005em;
+  max-width: 34ch;
+  margin: 0;
+}
+.landing .quote figcaption {
+  font-size: 15.5px;
+  line-height: var(--leading);
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+  margin: var(--half) 0 0;
+}
+
+.landing .close {
+  padding: calc(2.5 * var(--leading)) 0 calc(2 * var(--leading));
+}
+.landing .close h3 {
+  font-size: 26px;
+  line-height: var(--leading);
+}
+.landing .close .sub {
+  font-size: 15.5px;
+  line-height: var(--leading);
+  color: color-mix(in srgb, var(--color-text) 78%, transparent);
+  margin: var(--half) 0 0;
+  max-width: var(--measure);
+}
+.landing footer {
+  padding: calc(2 * var(--leading)) 0;
+  font-size: 13px;
+  line-height: var(--leading);
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+
+@media (max-width: 720px) {
+  .landing .stats .grid {
+    grid-template-columns: repeat(2, 1fr);
+    justify-content: start;
+  }
+}

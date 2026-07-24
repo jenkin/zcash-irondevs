@@ -252,7 +252,7 @@ a {
 }
 .landing .stats .grid {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(4, minmax(90px, auto));
   justify-content: space-between;
   gap: calc(1.5 * var(--leading)) var(--leading);
 }

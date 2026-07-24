@@ -101,7 +101,14 @@ export default async function ContributorPage({ params }: { params: Promise<{ id
               <p className="stat-label">{profile.aliasCount === 1 ? "Git identity" : "Git identities merged"}</p>
             </div>
             <div style={{ minWidth: 0 }}>
-              <p className="stat-num" style={{ fontSize: "clamp(16px, 2vw, 28px)", overflowWrap: "anywhere", wordBreak: "break-word" }}>
+              <p
+                className="stat-num"
+                style={{
+                  fontSize: (profile.communityLabel?.length ?? 0) > 10 ? "clamp(16px, 2vw, 28px)" : undefined,
+                  overflowWrap: (profile.communityLabel?.length ?? 0) > 10 ? "anywhere" : undefined,
+                  wordBreak: (profile.communityLabel?.length ?? 0) > 10 ? "break-word" : undefined,
+                }}
+              >
                 {profile.communityLabel ?? "Unaffiliated"}
               </p>
               <p className="stat-label">Community, at their peak</p>

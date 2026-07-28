@@ -2,6 +2,14 @@
 
 A high-performance, multi-stage pipeline for extracting, deduplicating, and visualizing the Zcash ecosystem's co-authorship network. Built with Rust for maximum speed and reliability, featuring an interactive, time-sliced web visualization.
 
+## 🎨 Visualizations
+
+### Interactive Network Graph
+![Network Visualization](screenshots/screenshot.png)
+
+### Demo
+![Pipeline Demo](screenshots/screencast.gif)
+
 ## 🚀 Features
 
 - **High-Performance Extraction**: Multi-threaded Git history parsing using `git2` and `rayon`, processing thousands of commits per second.

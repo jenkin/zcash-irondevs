@@ -1,0 +1,28 @@
+1:"$Sreact.fragment"
+2:"/zcash-irondevs/_next/static/chunks/07ghgccwefz2b.js"
+3:I[79520,["$2"],""]
+4:I[39756,["$2"],"default"]
+5:I[37457,["$2"],"default"]
+7:I[47257,["$2"],"ClientPageRoot"]
+8:"/zcash-irondevs/_next/static/chunks/2hkq9n9rxxh5i.js"
+9:I[52683,["$2","$8"],"default"]
+c:I[97367,["$2"],"OutletBoundary"]
+d:"$Sreact.suspense"
+f:"ViewportBoundary"
+10:I[97367,["$2"],"$f"]
+12:"MetadataBoundary"
+13:I[97367,["$2"],"$12"]
+15:I[68027,["$2"],"default",1]
+:HL["/zcash-irondevs/_next/static/chunks/1ln70v_blwz04.css","style"]
+:HL["/zcash-irondevs/_next/static/media/237858b39a32779d-s.p.2cyn07wtgehh0.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/zcash-irondevs/_next/static/media/2880e9b87afbd5d9-s.p.226pwps5o-gq_.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/zcash-irondevs/_next/static/media/916cd8a3bde3edf8-s.p.0oace-s_gkfks.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/zcash-irondevs/_next/static/media/d6c1ff7e86974212-s.p.40sczeszzbjw1.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+6:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":[["$","$L7",null,{"Component":"$9","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@a","$@b"]}}],[["$","script","script-0",{"src":"/zcash-irondevs/_next/static/chunks/2hkq9n9rxxh5i.js","async":true,"nonce":"$undefined"}]],["$","$Lc",null,{"children":["$","$d",null,{"name":"Next.MetadataOutlet","children":"$@e"}]}]]}],"p":false,"v":null}}]]
+0:{"P":null,"c":["",""],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/zcash-irondevs/_next/static/chunks/1ln70v_blwz04.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/zcash-irondevs/_next/static/chunks/07ghgccwefz2b.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","suppressHydrationWarning":true,"className":"zOY2oq_variable ChPWvq_variable h-full antialiased","children":["$","body",null,{"className":"h-full overflow-hidden","children":[["$","$L3",null,{"id":"theme-init","strategy":"beforeInteractive","children":"try{var t=localStorage.getItem('ironwood-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}"}],["$","$L4",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L5",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}]]}]}]]}],"p":false,"v":null},"c":"$Q6"},"h":{"r":["$","$1","h",{"children":[null,["$","$L10",null,{"children":"$L11"}],["$","$L13",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$d",null,{"name":"Next.Metadata","children":"$L14"}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":false,"v":null}},"m":"$undefined","G":["$15",[["$","link","0",{"rel":"stylesheet","href":"/zcash-irondevs/_next/static/chunks/1ln70v_blwz04.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"15Y8epjYetnHYekt8OvQD"}
+a:{}
+b:"$6:0:1:d:r:props:children:0:props:serverProvidedParams:params"
+11:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+16:I[27201,["$2"],"IconMark"]
+e:null
+14:[["$","title","0",{"children":"Ten Years of Zcash · Co-authorship Network"}],["$","meta","1",{"name":"description","content":"A decade of Zcash development as a dynamic co-authorship network, animated, interactive, built from the git history of the ecosystem."}],["$","link","2",{"rel":"icon","href":"/zcash-irondevs/icon.png?icon.1o--u54yql2-d.png","sizes":"512x512","type":"image/png"}],["$","link","3",{"rel":"apple-touch-icon","href":"/zcash-irondevs/apple-icon.png?apple-icon.2fsvtused3rq8.png","sizes":"180x180","type":"image/png"}],["$","$L16","4",{}]]

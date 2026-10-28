@@ -467,7 +467,10 @@ export default function GraphCanvas() {
     const x0 = d3.quantileSorted(xs, 0.05)! - pad, x1 = d3.quantileSorted(xs, 0.95)! + pad;
     const y0 = d3.quantileSorted(ys, 0.05)! - pad, y1 = d3.quantileSorted(ys, 0.95)! + pad;
     const rect = svgRef.current!.getBoundingClientRect();
-    const k = Math.max(0.3, Math.min(3, 0.68 * Math.min(rect.width / (x1 - x0), rect.height / (y1 - y0))));
+    // early in the story a handful of nodes would be zoomed in until the biggest one
+    // fills the screen, so also cap the zoom by how large a node may look on screen
+    const kFit = 0.68 * Math.min(rect.width / (x1 - x0), rect.height / (y1 - y0));
+    const k = Math.max(0.3, Math.min(3, kFit, (0.08 * Math.min(rect.width, rect.height)) / maxR));
     const tx = (rect.width - k * (x0 + x1)) / 2;
     const ty = (rect.height - k * (y0 + y1)) / 2;
     refs.current.svg.transition().duration(dur).call(

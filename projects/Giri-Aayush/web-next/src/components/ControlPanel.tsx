@@ -10,7 +10,7 @@ import { Segmented } from "./Segmented";
 const num = (v: number | readonly number[]) => (Array.isArray(v) ? v[0] : (v as number));
 
 export default function ControlPanel({ onClose, className }: { onClose?: () => void; className?: string }) {
-  const { data, colorBy, sizeBy, sizeScale, minWeight, showBots, set } = useViz();
+  const { data, colorBy, sizeBy, sizeScale, minWeight, showBots, allTies, set } = useViz();
   const [q, setQ] = useState("");
   const [hit, setHit] = useState(0); // keyboard-highlighted search result
   // desktop opens minimal (masthead + search); the drawer opens with tools shown
@@ -167,6 +167,16 @@ export default function ControlPanel({ onClose, className }: { onClose?: () => v
                 </div>
                 <Slider min={1} max={maxWeight} step={1} value={[minWeight]} onValueChange={(v) => set("minWeight", num(v))} />
               </div>
+
+              {/* thin to each person's strongest ties vs draw every tie */}
+              <label className="flex cursor-pointer items-center gap-2.5">
+                <input
+                  type="checkbox" checked={allTies}
+                  onChange={(e) => set("allTies", e.target.checked)}
+                  className="size-3.5 accent-[var(--gold)]"
+                />
+                <span className="label">Show all ties</span>
+              </label>
 
               {/* show bots */}
               <label className="flex cursor-pointer items-center gap-2.5">

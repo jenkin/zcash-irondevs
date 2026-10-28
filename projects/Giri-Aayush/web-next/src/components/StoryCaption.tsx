@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useViz } from "@/lib/store";
+import { computeStats } from "@/lib/graph";
 
 // The decade as authored beats, keyed to Zcash network upgrades.
 const CHAPTERS: { ym: string; title: string; text: string }[] = [
@@ -11,11 +12,11 @@ const CHAPTERS: { ym: string; title: string; text: string }[] = [
   { ym: "2020-07", title: "Heartwood → Canopy", text: "2020, upgrades land back to back as the ecosystem matures." },
   { ym: "2022-05", title: "NU5 · Orchard", text: "2022, Orchard & unified addresses. New teams join; collaboration deepens." },
   { ym: "2024-11", title: "NU6", text: "2024, the network keeps shipping. The graph is now dense with ties." },
-  { ym: "2026-07", title: "Ironwood", text: "2026, ten years, ~190 people, one shielded ecosystem." },
+  { ym: "2026-07", title: "Ironwood", text: "2026, ten years, {people} people, one shielded ecosystem." },
 ];
 
 export default function StoryCaption() {
-  const { data, month, story, set, setMonth } = useViz();
+  const { data, month, story, mode, windowSize, minWeight, showBots, set, setMonth } = useViz();
   if (!data || !story) return null;
 
   const months = data.meta.months;
@@ -24,6 +25,9 @@ export default function StoryCaption() {
     const mi = months.indexOf(c.ym);
     if (mi >= 0 && mi <= month) { ch = c; idx = i; }
   });
+
+  // same count the People stat shows, so the caption can't drift from the data
+  const people = computeStats(data, month, mode, windowSize, minWeight, showBots).people;
 
   const skip = () => {
     set("playing", false);
@@ -44,7 +48,7 @@ export default function StoryCaption() {
           className="glass pointer-events-auto max-w-sm rounded-2xl px-6 py-4 text-center"
         >
           <div className="label mb-1.5 text-gold/80" style={{ letterSpacing: "0.2em" }}>{ch.title}</div>
-          <p className="font-display text-[15px] leading-snug text-foreground/90 text-balance">{ch.text}</p>
+          <p className="font-display text-[15px] leading-snug text-foreground/90 text-balance">{ch.text.replace("{people}", String(people))}</p>
           <button onClick={skip} className="label mt-3 text-foreground/45 transition-colors hover:text-gold">
             Skip → explore the network
           </button>

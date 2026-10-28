@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { useViz } from "@/lib/store";
 import {
+  backbone,
   buildColorModel,
   linkWeight,
   nodeCommits,
@@ -34,7 +35,7 @@ export default function GraphCanvas() {
   const refs = useRef<Refs>({} as Refs);
 
   const {
-    data, month, mode, windowSize, colorBy, sizeBy, sizeScale, minWeight, showBots, selected, story,
+    data, month, mode, windowSize, colorBy, sizeBy, sizeScale, minWeight, showBots, allTies, selected, story,
   } = useViz();
 
   // ── one-time setup ──
@@ -153,10 +154,11 @@ export default function GraphCanvas() {
       return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [month, mode, windowSize, colorBy, sizeBy, sizeScale, minWeight, showBots]);
+  }, [month, mode, windowSize, colorBy, sizeBy, sizeScale, minWeight, showBots, story, allTies]);
 
   useEffect(() => {
     if (!sim.current) return;
+    update(); // the thinned view keeps the selected person's ties
     applyHighlight(selected);
     if (selected) recenter(selected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,7 +218,7 @@ export default function GraphCanvas() {
       nodes.push(n);
     }
     const vis = new Set(nodes.map((n) => n.id));
-    const links: GLink[] = [];
+    let links: GLink[] = [];
     const degree = new Map<string, number>();
     for (const l of data!.links) {
       if (!vis.has(l.s!) || !vis.has(l.t!)) continue;
@@ -224,8 +226,16 @@ export default function GraphCanvas() {
       if (w < st.minWeight) continue;
       l.w = w;
       links.push(l);
+    }
+    // degree counts every tie so "size by ties" matches the tooltip; only the drawing is thinned
+    for (const l of links) {
       degree.set(l.s!, (degree.get(l.s!) || 0) + 1);
       degree.set(l.t!, (degree.get(l.t!) || 0) + 1);
+    }
+    if (!st.story && !st.allTies) {
+      // keep the selected person's own ties so the highlight shows all of them
+      const keep = new Set(backbone(links));
+      links = links.filter((l) => keep.has(l) || l.s === st.selected || l.t === st.selected);
     }
     // keep everyone: connected people are vivid, the rest form a muted background sea
     return { nodes, links, nodeC, degree };

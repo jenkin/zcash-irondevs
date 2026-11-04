@@ -13,7 +13,7 @@
 Every dot is a **person**. Every line joins two people who worked in the same
 repository, weighted by how many months they were actually active there
 together. On load, the piece **plays the decade back**, from the founding
-handful in 2016 to the roughly 190-strong ecosystem that ships Ironwood,
+handful in 2016 to the roughly 400-strong ecosystem that ships Ironwood,
 narrated at each Zcash network upgrade. Then you explore. Contributor nodes
 carry their real GitHub avatars, ringed in their detected community color.
 
@@ -117,7 +117,7 @@ without losing the data.
 | **Slice time** | scrub to any month; **Cumulative**, or a sliding **Window** of who was active together |
 | **Recolor** | by detected **community** (Louvain) or **organization** |
 | **Size by** | commits, collaborators (degree), or **bridging** (betweenness) |
-| **Declutter** | raise the *minimum tie strength* to isolate the tightest collaborations |
+| **Declutter** | by default each person keeps their 3 strongest ties; tick *Show all ties* for every tie, or raise the *minimum tie strength* to isolate the tightest collaborations |
 | **Find anyone** | search, and the camera flies to them and lights up their ties |
 | **Scan the leaderboard** | a ranked top-contributors rail with commit share; click a row to fly to them |
 | **Open a profile** | click a node for a card with their repos, closest collaborators, cluster weight, and stats |

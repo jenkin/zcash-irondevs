@@ -97,20 +97,43 @@ export function prettyMonth(months: string[], m: number) {
   return { year: y, month: MONTH_NAMES[+mo - 1] };
 }
 
+// Default explore view: each person keeps their strongest BACKBONE_K ties, so everyone
+// stays connected and visible but the drawing stays light and readable.
+export const BACKBONE_K = 3;
+export function backbone<T extends { s?: string; t?: string; w?: number }>(links: T[], k = BACKBONE_K): T[] {
+  const byNode = new Map<string, T[]>();
+  for (const l of links) for (const id of [l.s!, l.t!]) {
+    const a = byNode.get(id);
+    if (a) a.push(l); else byNode.set(id, [l]);
+  }
+  const keep = new Set<T>();
+  for (const a of byNode.values()) {
+    a.sort((x, y) => (y.w || 0) - (x.w || 0));
+    for (let i = 0; i < Math.min(k, a.length); i++) keep.add(a[i]);
+  }
+  return links.filter((l) => keep.has(l));
+}
+
 export function computeStats(
   data: GraphDoc, month: number, mode: Mode, windowSize: number, minWeight: number, showBots: boolean,
+  thin = false,
 ) {
   const active = data.nodes.filter(
     (n) => (showBots || !n.is_bot) && nodeCommits(n, month, mode, windowSize) > 0
   );
   const activeIds = new Set(active.map((n) => n.id));
   const deg = new Map<string, number>();
-  let ties = 0;
+  let drawn: { s: string; t: string; w: number }[] = [];
   for (const l of data.links) {
     const s = l.s ?? l.source, t = l.t ?? l.target;
     if (!activeIds.has(s) || !activeIds.has(t)) continue;
-    if (linkWeight(l, month, mode, windowSize) < minWeight) continue;
-    ties++;
+    const w = linkWeight(l, month, mode, windowSize);
+    if (w < minWeight) continue;
+    drawn.push({ s, t, w });
+  }
+  if (thin) drawn = backbone(drawn);
+  const ties = drawn.length;
+  for (const { s, t } of drawn) {
     deg.set(s, (deg.get(s) || 0) + 1);
     deg.set(t, (deg.get(t) || 0) + 1);
   }

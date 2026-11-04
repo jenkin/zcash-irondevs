@@ -1,0 +1,15 @@
+# regenerated data & caches, never committed
+data/
+.cache/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Next.js build artifacts (source is committed; `npm ci && npm run build` regenerates)
+web-next/node_modules/
+web-next/.next/
+web-next/out/
+web-next/.netlify/
+
+# web-next/public/graph.json + avatars ARE committed so the site builds out-of-the-box

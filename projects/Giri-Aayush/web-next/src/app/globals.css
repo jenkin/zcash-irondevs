@@ -1,0 +1,240 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-display);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --color-gold: var(--gold);
+  --color-canvas: var(--canvas);
+  --color-hairline: var(--hairline);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+/* ── Ten Years of Zcash, instrument design system ── */
+:root {
+  --canvas: #090d16;
+  --gold: #f4b728;
+  --hairline: rgba(255, 255, 255, 0.07);
+
+  --background: #090d16;
+  --foreground: #ede7dc;
+  --card: rgba(20, 19, 18, 0.8);
+  --card-foreground: #ede7dc;
+  --popover: #161514;
+  --popover-foreground: #ede7dc;
+  --primary: #f4b728;
+  --primary-foreground: #0c0b0a;
+  --secondary: rgba(255, 255, 255, 0.05);
+  --secondary-foreground: #ede7dc;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: rgba(237, 231, 220, 0.5);
+  --label-ink: rgba(237, 231, 220, 0.68); /* section labels must stay readable */
+  --accent: rgba(244, 183, 40, 0.13);
+  --accent-foreground: #f4b728;
+  --destructive: oklch(0.7 0.19 22);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.09);
+  --ring: rgba(244, 183, 40, 0.5);
+  --radius: 0.6rem;
+
+  /* floating glass surface */
+  --glass-bg: rgba(13, 17, 27, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-shadow: rgba(0, 0, 0, 0.8);
+
+  /* graph ink (SVG links + labels) */
+  --graph-link: #6a79a6;
+  --graph-ink: #c9c3b6;         /* resting node labels */
+  --graph-ink-strong: #ede7dc;  /* focused label */
+  --graph-ink-halo: #090d16;    /* label outline = canvas */
+  --grid-line: rgba(120, 140, 190, 0.06);
+
+  --ambient-1: rgba(90, 110, 180, 0.1);
+  --ambient-2: rgba(244, 183, 40, 0.05);
+}
+
+/* ── daylight: a muted slate control surface, not a blank page ── */
+:root[data-theme="light"] {
+  --canvas: #d4d9e3;
+  --gold: #a5760c;
+  --hairline: rgba(15, 23, 42, 0.1);
+
+  --background: #d4d9e3;
+  --foreground: #10141c;
+  --card: rgba(255, 255, 255, 0.85);
+  --card-foreground: #14181f;
+  --popover: #ffffff;
+  --popover-foreground: #14181f;
+  --primary: #b5820f;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(15, 23, 42, 0.05);
+  --secondary-foreground: #14181f;
+  --muted: rgba(15, 23, 42, 0.05);
+  --muted-foreground: rgba(20, 24, 31, 0.55);
+  --label-ink: rgba(20, 24, 31, 0.68);
+  --accent: rgba(181, 130, 15, 0.14);
+  --accent-foreground: #8a6209;
+  --border: rgba(15, 23, 42, 0.1);
+  --input: rgba(15, 23, 42, 0.12);
+  --ring: rgba(181, 130, 15, 0.5);
+
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-shadow: rgba(30, 41, 79, 0.18);
+
+  --graph-link: #45516f;
+  --graph-ink: #2b3346;
+  --graph-ink-strong: #10141c;
+  --graph-ink-halo: #dfe4ee;
+  --grid-line: rgba(40, 60, 110, 0.09);
+
+  --ambient-1: rgba(90, 120, 200, 0.07);
+  --ambient-2: rgba(181, 130, 15, 0.04);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background: var(--canvas);
+    color: var(--foreground);
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  /* floating glass panel, the signature surface */
+  .glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    backdrop-filter: blur(18px) saturate(1.25);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 18px 50px -20px var(--glass-shadow);
+  }
+  /* tiny tracked mono label, IBM Plex Mono, uppercase */
+  .label {
+    font-family: var(--font-mono), monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 9.5px;
+    color: var(--label-ink);
+    font-weight: 500;
+  }
+  .mono {
+    font-family: var(--font-mono), monospace;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+}
+
+/* keyboard focus is always visible, gold ring on any focusable */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* the search field: tokenized surface with a visible focus border */
+.search-input {
+  background: var(--secondary);
+  border: 1px solid var(--input);
+}
+.search-input:focus {
+  border-color: var(--ring);
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+.breathe { animation: breathe 10s ease-in-out infinite; }
+
+/* respect the user's motion preference: the network stays fully usable static */
+@media (prefers-reduced-motion: reduce) {
+  .link, .station, .ping, .breathe {
+    animation: none !important;
+  }
+  body, .glass, text.whale, text.lbl {
+    transition: none !important;
+  }
+}
+
+/* ambient depth glow, themed so light mode stays clean */
+.ambient {
+  background:
+    radial-gradient(90% 70% at 52% 42%, var(--ambient-1), transparent 60%),
+    radial-gradient(60% 50% at 52% 42%, var(--ambient-2), transparent 65%);
+}
+
+/* ties flow like the monitoring-map arcs (calm, slow) */
+@keyframes flowDash { to { stroke-dashoffset: -26; } }
+/* mostly-ink dash so long weak ties read as lines, not dotted fragments */
+.link { stroke: var(--graph-link); stroke-dasharray: 10 3; animation: flowDash 2.6s linear infinite; }
+
+/* node labels read their ink + halo from the theme, so a toggle re-colors them live */
+text.whale { fill: var(--graph-ink); stroke: var(--graph-ink-halo); }
+text.lbl { fill: var(--graph-ink-strong); stroke: var(--graph-ink-halo); }
+
+/* the background sea: hollow theme-tinted rings (transparent fill keeps hover hit area) */
+circle.body.ring {
+  fill: transparent;
+  stroke: var(--graph-link);
+  stroke-opacity: 0.5;
+}
+
+/* re-theme the surfaces and canvas smoothly, not instantly */
+body, .glass, .link, text.whale, text.lbl {
+  transition: background-color 0.45s ease, color 0.45s ease, fill 0.45s ease,
+    stroke 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease;
+}
+
+/* radar ping emanating from the focused node */
+@keyframes radarPing {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(3.6); opacity: 0; }
+}
+.ping { transform-box: fill-box; transform-origin: center; animation: radarPing 1.9s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+/* ambient concentric pulse on every connected "station" (like the monitoring map) */
+@keyframes station {
+  0% { transform: scale(1); opacity: 0.3; }
+  70%, 100% { transform: scale(2.1); opacity: 0; }
+}
+.station { transform-box: fill-box; transform-origin: center; animation: station 4.8s ease-out infinite; will-change: transform, opacity; }

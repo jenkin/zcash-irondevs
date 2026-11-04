@@ -1,0 +1,22 @@
+[project]
+name = "zcash-irondevs-ironwood"
+version = "0.1.0"
+description = "Dynamic co-authorship network of the Zcash ecosystem, Ironwood contest submission"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydriller>=2.10",
+    "networkx>=3.3",
+    "python-louvain>=0.16",
+    "pillow>=10.0",
+]
+
+[project.scripts]
+ironwood = "pipeline.cli:main"
+
+[tool.setuptools]
+packages = ["pipeline"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

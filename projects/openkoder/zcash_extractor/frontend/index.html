@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zcash Co-authorship Network</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="cytoscape.min.js"></script>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-text">Loading graph data...</p>
+    </div>
+
+    <div id="ui-panel">
+        <h2>Zcash Ecosystem Network</h2>
+        
+        <div class="control-group">
+            <label>Time Range: <span class="shortcut-hint">(Ctrl + Arrows)</span></label>
+            <div class="date-inputs-vertical">
+                <div class="date-row">
+                    <label for="date-from" class="date-label">From:</label>
+                    <div class="date-with-buttons">
+                        <button class="date-btn" id="btn-date-from-minus" title="Decrease by 1 day (Ctrl + ←)">−</button>
+                        <input type="date" id="date-from">
+                        <button class="date-btn" id="btn-date-from-plus" title="Increase by 1 day (Ctrl + →)">+</button>
+                    </div>
+                </div>
+                <div class="date-row">
+                    <label for="date-to" class="date-label">To:</label>
+                    <div class="date-with-buttons">
+                        <button class="date-btn" id="btn-date-to-minus" title="Decrease by 1 day (Ctrl + ↓)">−</button>
+                        <input type="date" id="date-to">
+                        <button class="date-btn" id="btn-date-to-plus" title="Increase by 1 day (Ctrl + ↑)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="metrics" id="metrics-panel">
+            <p>Loading metrics...</p>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item"><span class="dot author"></span> Author</div>
+            <div class="legend-item"><span class="dot repo"></span> Repository</div>
+        </div>
+    </div>
+    <div id="cy"></div>
+    <script src="script.js"></script>
+</body>
+</html>

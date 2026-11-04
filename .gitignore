@@ -1,2 +1,12 @@
+# Rust
+**/target/
+**/*.rs.bk
+
+# Generated data and pipeline artifacts
 data/*
 !data/.gitkeep
+
+extracted_commits.csv
+authors.csv
+commits_dedup.csv
+graph_data.json

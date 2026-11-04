@@ -1,0 +1,224 @@
+// src/graph.rs
+
+use anyhow::{Context, Result};
+use chrono::{DateTime, Utc};
+use csv::Reader;
+use serde::Serialize;
+use std::collections::{HashMap, HashSet, BTreeSet};
+use std::fs::File;
+use std::time::Instant;
+
+use crate::types::{AuthorRecord, MappedCommitRecord};
+
+/// Represents a node in the graph, which can be either an author or a repository.
+#[derive(Serialize)]
+struct Node {
+    id: String,
+    label: String,
+    node_type: String,
+    total_commits: u32,
+    x: f64,
+    y: f64,
+}
+
+/// Represents a connection (edge) between an author and a repository.
+#[derive(Serialize)]
+struct Link {
+    source: String,
+    target: String,
+    total_commits: u32,
+    active_days: Vec<String>,
+    first_day: String,
+    last_day: String,
+}
+
+/// Holds aggregate statistics about the generated graph.
+#[derive(Serialize)]
+struct Metrics {
+    total_authors: usize,
+    total_repos: usize,
+    total_commits: u32,
+    top_authors: Vec<(String, u32)>,
+    active_days: Vec<String>,
+}
+
+/// The root structure that will be serialized into the final JSON output.
+#[derive(Serialize)]
+struct GraphData {
+    nodes: Vec<Node>,
+    links: Vec<Link>,
+    metrics: Metrics,
+}
+
+/// Converts a Unix timestamp into a standardized "YYYY-MM-DD" string format.
+fn get_day_from_timestamp(timestamp: i64) -> String {
+    let dt = DateTime::<Utc>::from_timestamp(timestamp, 0).unwrap_or_default();
+    dt.format("%Y-%m-%d").to_string()
+}
+
+/// Main execution function for building the graph data.
+pub fn run() -> Result<()> {
+    let total_start = Instant::now();
+    
+    println!("Reading authors.csv...");
+    let authors_file = File::open("authors.csv").context("Failed to open authors.csv")?;
+    let mut authors_rdr = Reader::from_reader(authors_file);
+    
+    let mut author_names: HashMap<String, String> = HashMap::new();
+    let mut author_commit_counts: HashMap<String, u32> = HashMap::new();
+    
+    // Load author names and initialize their commit counts.
+    for result in authors_rdr.deserialize() {
+        let author: AuthorRecord = result?;
+        author_names.insert(author.author_id.clone(), author.canonical_name);
+        author_commit_counts.insert(author.author_id, 0);
+    }
+
+    println!("Reading commits_dedup.csv and aggregating by author-repo pairs...");
+    let commits_file = File::open("commits_dedup.csv").context("Failed to open commits_dedup.csv")?;
+    let mut commits_rdr = Reader::from_reader(commits_file);
+    
+    let mut pair_commits: HashMap<(String, String), u32> = HashMap::new();
+    let mut pair_days: HashMap<(String, String), BTreeSet<String>> = HashMap::new();
+    let mut unique_repos: HashSet<String> = HashSet::new();
+    let mut repo_commit_counts: HashMap<String, u32> = HashMap::new();
+    let mut active_days: HashSet<String> = HashSet::new();
+    let mut total_commits: u32 = 0;
+
+    // Aggregate commit data, tracking total commits per pair and active days.
+    for result in commits_rdr.deserialize() {
+        let record: MappedCommitRecord = result?;
+        let day = get_day_from_timestamp(record.timestamp);
+        
+        let pair_key = (record.author_id.clone(), record.repo_id.clone());
+        *pair_commits.entry(pair_key.clone()).or_insert(0) += 1;
+        pair_days.entry(pair_key).or_default().insert(day.clone());
+        
+        unique_repos.insert(record.repo_id.clone());
+        *repo_commit_counts.entry(record.repo_id).or_insert(0) += 1;
+        *author_commit_counts.entry(record.author_id).or_insert(0) += 1;
+        
+        active_days.insert(day);
+        total_commits += 1;
+    }
+
+    println!("Building graph structures with diagonal layout...");
+    
+    // Sort authors and repositories by commit count in descending order.
+    let mut sorted_authors: Vec<_> = author_commit_counts.iter().collect();
+    sorted_authors.sort_by(|a, b| b.1.cmp(a.1));
+    
+    let mut sorted_repos: Vec<_> = repo_commit_counts.iter().collect();
+    sorted_repos.sort_by(|a, b| b.1.cmp(a.1));
+    
+    let mut nodes = Vec::new();
+    
+    // LEFT SIDE: Authors
+    // Calculate diagonal coordinates based on the author's rank (commit count).
+    let author_count = sorted_authors.len();
+    for (i, (author_id, commits)) in sorted_authors.iter().enumerate() {
+        let c = **commits;
+        
+        // Rank ratio: 0.0 for the most active, 1.0 for the least active.
+        let rank_ratio = if author_count > 1 {
+            i as f64 / (author_count - 1) as f64
+        } else {
+            0.0
+        };
+        
+        // Y coordinate goes from top to bottom (0.1 to 0.9).
+        let y = 0.1 + rank_ratio * 0.8;
+        
+        // X coordinate goes from left to right (0.20 to 0.70).
+        // Most active authors are positioned at the top-left (x=0.20, y=0.1).
+        // Less active authors are positioned towards the bottom-right (x=0.70, y=0.9).
+        let x = 0.20 + rank_ratio * 0.50;
+        
+        nodes.push(Node {
+            id: (*author_id).clone(),
+            label: author_names.get(*author_id).cloned().unwrap_or_else(|| "Unknown".to_string()),
+            node_type: "author".to_string(),
+            total_commits: c,
+            x,
+            y,
+        });
+    }
+    
+    // RIGHT SIDE: Repositories (fixed vertical column).
+    let repo_count = sorted_repos.len();
+    for (i, (repo_id, commits)) in sorted_repos.iter().enumerate() {
+        let denominator = (repo_count as f64 - 1.0).max(1.0);
+        let y = 0.1 + (i as f64 / denominator) * 0.8;
+        
+        nodes.push(Node {
+            id: (*repo_id).clone(),
+            label: (*repo_id).clone(),
+            node_type: "repo".to_string(),
+            total_commits: **commits,
+            x: 0.85,
+            y,
+        });
+    }
+
+    // Create edges (one for each unique author-repository pair).
+    let mut links = Vec::new();
+    for ((author_id, repo_id), total_commits) in pair_commits {
+        let days = pair_days.get(&(author_id.clone(), repo_id.clone())).unwrap();
+        let first_day = days.first().unwrap().clone();
+        let last_day = days.last().unwrap().clone();
+        
+        links.push(Link {
+            source: author_id,
+            target: repo_id,
+            total_commits,
+            active_days: days.into_iter().cloned().collect(),
+            first_day,
+            last_day,
+        });
+    }
+
+    // Sort edges by commit count to ensure consistent rendering order.
+    links.sort_by(|a, b| b.total_commits.cmp(&a.total_commits));
+
+    // Prepare top authors list for the metrics section.
+    let mut sorted_authors_for_metrics: Vec<_> = author_commit_counts.into_iter().collect();
+    sorted_authors_for_metrics.sort_by(|a, b| b.1.cmp(&a.1));
+    let top_authors: Vec<(String, u32)> = sorted_authors_for_metrics
+        .into_iter()
+        .take(10)
+        .map(|(id, count)| {
+            let name = author_names.get(&id).cloned().unwrap_or_else(|| "Unknown".to_string());
+            (name, count)
+        })
+        .collect();
+
+    // Sort active days chronologically.
+    let mut sorted_days: Vec<_> = active_days.into_iter().collect();
+    sorted_days.sort();
+
+    let graph_data = GraphData {
+        nodes,
+        links,
+        metrics: Metrics {
+            total_authors: author_names.len(),
+            total_repos: unique_repos.len(),
+            total_commits,
+            top_authors,
+            active_days: sorted_days,
+        },
+    };
+
+    println!("Writing graph_data.json...");
+    let json_file = File::create("graph_data.json")?;
+    serde_json::to_writer_pretty(json_file, &graph_data)?;
+
+    let total_duration = total_start.elapsed();
+    println!("--- Graph Building Statistics ---");
+    println!("Total nodes (authors + repos): {}", graph_data.nodes.len());
+    println!("Total unique edges (aggregated by pairs): {}", graph_data.links.len());
+    println!("Graph generation time: {:.2} seconds", total_duration.as_secs_f64());
+    println!("Output saved to: graph_data.json");
+    println!("---------------------------------");
+
+    Ok(())
+}

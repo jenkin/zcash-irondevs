@@ -1,0 +1,211 @@
+let cy;
+let allLinks = [];
+let activeMonths = [];
+let allNodes = [];
+
+async function init() {
+    try {
+        console.log("Loading graph data...");
+        const response = await fetch('/graph_data.json');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Data loaded successfully:", data);
+        
+        if (!data.nodes || !data.links || !data.metrics) {
+            throw new Error("Invalid data structure");
+        }
+        
+        allLinks = data.links;
+        activeMonths = data.metrics.active_months;
+        allNodes = data.nodes;
+        
+        console.log(`Loaded ${allNodes.length} nodes and ${allLinks.length} links`);
+        console.log(`Active months: ${activeMonths.length}`);
+        
+        updateMetrics(data.metrics);
+        setupSlider(activeMonths.length);
+        renderGraph(allNodes, allLinks, activeMonths.length - 1);
+        
+    } catch (error) {
+        console.error("Failed to load graph data:", error);
+        document.getElementById('metrics-panel').innerHTML = `
+            <p style="color: #e31e24; font-weight: 600;">Error loading data</p>
+            <p style="color: #6e6e6e; font-size: 0.8rem;">${error.message}</p>
+            <p style="color: #6e6e6e; font-size: 0.8rem; margin-top: 10px;">
+                Make sure you ran:<br>
+                <code style="background: #e4ebef; padding: 2px 6px; border-radius: 3px;">cargo run --release</code>
+            </p>
+        `;
+    }
+}
+
+function updateMetrics(metrics) {
+    const panel = document.getElementById('metrics-panel');
+    const topAuthorsHtml = metrics.top_authors.map(([name, count]) => 
+        `<li>${name} - <strong>${count}</strong> commits</li>`
+    ).join('');
+    
+    panel.innerHTML = `
+        <p><strong>Total Authors:</strong> ${metrics.total_authors}</p>
+        <p><strong>Total Repos:</strong> ${metrics.total_repos}</p>
+        <p><strong>Total Commits:</strong> ${metrics.total_commits}</p>
+        <p><strong>Active Months:</strong> ${metrics.active_months.length}</p>
+        <p><strong>Top Contributors:</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px;">${topAuthorsHtml}</ul>
+    `;
+}
+
+function setupSlider(maxIndex) {
+    const slider = document.getElementById('time-slider');
+    const label = document.getElementById('time-label');
+    
+    if (maxIndex > 0) {
+        slider.max = maxIndex;
+        slider.value = maxIndex;
+        
+        slider.addEventListener('input', (e) => {
+            const index = parseInt(e.target.value);
+            if (index === maxIndex) {
+                label.textContent = "All Time";
+            } else {
+                label.textContent = `Up to ${activeMonths[index]}`;
+            }
+            renderGraph(allNodes, allLinks, index);
+        });
+    } else {
+        slider.disabled = true;
+        label.textContent = "No data";
+    }
+}
+
+function renderGraph(nodes, links, monthIndex) {
+    const cutoffMonth = activeMonths[monthIndex];
+    const filteredLinks = links.filter(link => link.month <= cutoffMonth);
+    
+    console.log(`Rendering graph: ${nodes.length} nodes, ${filteredLinks.length} links (up to ${cutoffMonth})`);
+    
+    const elements = [
+        ...nodes.map(node => ({
+            data: { 
+                id: node.id, 
+                label: node.label, 
+                type: node.node_type,
+                weight: node.total_commits
+            }
+        })),
+        ...filteredLinks.map(link => ({
+            data: { 
+                source: link.source, 
+                target: link.target, 
+                weight: link.weight 
+            }
+        }))
+    ];
+
+    if (cy) {
+        cy.elements().remove();
+        cy.add(elements);
+        // ИСПОЛЬЗУЕМ ВСТРОЕННЫЙ 'cose' ВМЕСТО 'fcose'
+        cy.layout({ name: 'cose', animate: true, animationDuration: 500 }).run();
+    } else {
+        cy = cytoscape({
+            container: document.getElementById('cy'),
+            elements: elements,
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        'label': 'data(label)',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'color': '#0c2834',
+                        'text-outline-width': 1,
+                        'text-outline-color': '#fff',
+                        'font-size': '11px',
+                        'font-weight': '600',
+                        'width': 'mapData(weight, 1, 1000, 25, 65)',
+                        'height': 'mapData(weight, 1, 1000, 25, 65)'
+                    }
+                },
+                {
+                    selector: 'node[type = "author"]',
+                    style: {
+                        'background-color': '#00adee',
+                        'shape': 'ellipse',
+                        'border-width': 2,
+                        'border-color': '#fff',
+                        'border-opacity': 0.8
+                    }
+                },
+                {
+                    selector: 'node[type = "repo"]',
+                    style: {
+                        'background-color': '#1e73be',
+                        'shape': 'rectangle',
+                        'border-width': 2,
+                        'border-color': '#fff',
+                        'border-opacity': 0.8
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'width': 'mapData(weight, 1, 50, 1, 6)',
+                        'line-color': '#9cbedc',
+                        'opacity': 0.7,
+                        'curve-style': 'bezier',
+                        'target-arrow-shape': 'none'
+                    }
+                }
+            ],
+            layout: {
+                // ИСПОЛЬЗУЕМ ВСТРОЕННЫЙ 'cose' ВМЕСТО 'fcose'
+                name: 'cose',
+                animate: true,
+                animationDuration: 1000,
+                nodeRepulsion: 4500,
+                idealEdgeLength: 50,
+                edgeElasticity: 0.45,
+                nestingFactor: 0.9,
+                gravity: 0.25,
+                numIter: 1000,
+                tile: true
+            },
+            userZoomingEnabled: true,
+            userPanningEnabled: true,
+            minZoom: 0.2,
+            maxZoom: 3,
+        });
+
+        cy.on('tap', 'node', function(evt){
+            const node = evt.target;
+            console.log('Clicked node:', node.data('label'), 'Type:', node.data('type'));
+        });
+        
+        cy.on('mouseover', 'node', function(evt) {
+            const node = evt.target;
+            node.style({
+                'border-width': 3,
+                'border-color': '#ffd900'
+            });
+        });
+        
+        cy.on('mouseout', 'node', function(evt) {
+            const node = evt.target;
+            node.style({
+                'border-width': 2,
+                'border-color': '#fff'
+            });
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}

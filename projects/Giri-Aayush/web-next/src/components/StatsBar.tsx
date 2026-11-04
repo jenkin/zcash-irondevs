@@ -57,10 +57,10 @@ function Growth() {
 }
 
 export default function StatsBar() {
-  const { data, month, mode, windowSize, minWeight, showBots } = useViz();
+  const { data, month, mode, windowSize, minWeight, showBots, story, allTies } = useViz();
   const s = useMemo(
-    () => (data ? computeStats(data, month, mode, windowSize, minWeight, showBots) : null),
-    [data, month, mode, windowSize, minWeight, showBots]
+    () => (data ? computeStats(data, month, mode, windowSize, minWeight, showBots, !story && !allTies) : null),
+    [data, month, mode, windowSize, minWeight, showBots, story, allTies]
   );
   if (!s) return null;
   const int = (n: number) => Math.round(n).toLocaleString("en-US");
